@@ -1,0 +1,4 @@
+Chess Opening Academy
+Version: 3.46.0
+Android versionCode: 46
+Package type: source project; no compiled APK included.

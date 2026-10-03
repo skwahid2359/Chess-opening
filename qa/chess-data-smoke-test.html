@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chess Opening Academy — Chess Data Smoke Test</title>
+<style>body{font:14px/1.5 system-ui,sans-serif;max-width:1000px;margin:0 auto;padding:20px;background:#f4f5f0;color:#18251b}h1{font-size:24px}p{color:#536256}.summary{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}.pill{padding:8px 12px;border-radius:8px;background:#e3e9de}.pass{color:#1e713b;font-weight:700}.fail{color:#b3261e;font-weight:700}button{padding:8px 12px;border:1px solid #82917e;border-radius:8px;background:#fff;cursor:pointer}table{width:100%;border-collapse:collapse;background:white}th,td{text-align:left;padding:8px;border-bottom:1px solid #dce2d8;vertical-align:top}td:first-child{width:120px}code{overflow-wrap:anywhere}.note{background:#fff5d7;border:1px solid #e6d69d;padding:10px;border-radius:8px}</style></head>
+<body><h1>Chess Data Smoke Test</h1><p>This browser-run checker replays every opening and variation from the standard starting position, then applies each puzzle's solution and checks its declared goal. It does not evaluate whether a move is strategically best.</p><div class="note">Run this through a local web server from the project root (for example, <code>python -m http.server 8000</code>), then open <code>/qa/chess-data-smoke-test.html</code>. Internet is required to load chess.js from its CDN.</div><div class="summary"><span class="pill" id="summary">Running checks…</span><button id="rerun">Run again</button></div><table><thead><tr><th>Type</th><th>Item</th><th>Result</th><th>Details</th></tr></thead><tbody id="results"></tbody></table>
+<script type="module">
+const $=s=>document.querySelector(s);
+function row(type,name,ok,details){const tr=document.createElement("tr");for(const value of [type,name,ok?"PASS":"FAIL",details]){const td=document.createElement("td");td.textContent=value;tr.appendChild(td);}tr.children[2].className=ok?"pass":"fail";$("#results").appendChild(tr);return ok;}
+function validateLine(Chess,name,moves,type){try{const game=new Chess();for(let i=0;i<moves.length;i++)game.move(moves[i]);row(type,name,true,`${moves.length} plies replayed legally`);return true;}catch(error){row(type,name,false,`${error.message||error}`);return false;}}
+function validatePuzzle(Chess,puzzle){try{const game=new Chess(puzzle.fen);const move=game.move(puzzle.solution);if(!move)throw new Error("solution move could not be applied");let valid=false;switch(puzzle.goal){case "mate":valid=game.isCheckmate();break;case "capture":valid=!!move.captured;break;case "promotion":valid=!!move.promotion;break;case "move":valid=true;break;case "check":valid=game.isCheck();break;default:throw new Error(`unknown goal ${puzzle.goal}`);}if(!valid)throw new Error(`solution does not satisfy goal: ${puzzle.goal}`);row("Puzzle",puzzle.title,true,`${puzzle.solution} satisfies ${puzzle.goal}`);return true;}catch(error){row("Puzzle",puzzle.title,false,`${error.message||error}`);return false;}}
+function validatePgnRoundTrip(Chess){
+  try{
+    const original=new Chess();original.header("Event","PGN Comment Round Trip Test");original.move("e4");original.setComment("White controls the center");original.move("e5");original.setComment("Black mirrors the center");
+    const pgn=original.pgn(),restored=new Chess();restored.loadPgn(pgn);
+    const movesOk=restored.history().join(" ")===original.history().join(" ");
+    const comments=typeof restored.getComments==="function"?restored.getComments():[];
+    const commentsOk=comments.some(c=>c.comment==="White controls the center")&&comments.some(c=>c.comment==="Black mirrors the center");
+    const ok=movesOk&&commentsOk;row("PGN","Comment round-trip",ok,ok?"Moves and both position comments survived export/import":`moves ${movesOk?"OK":"failed"}; comments ${commentsOk?"OK":"failed"}`);return ok;
+  }catch(error){row("PGN","Comment round-trip",false,error.message||String(error));return false;}
+}
+async function run(){
+  $("#results").innerHTML="";$("#summary").textContent="Loading chess.js and study data…";$("#summary").className="pill";
+  try{
+    const dependencies=Promise.all([
+      import("https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm"),
+      import("../src/opening-data.js"),import("../src/variation-data.js"),import("../src/puzzle-data.js")
+    ]);
+    const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error("Timed out loading chess.js or local data modules. Check the local server and internet/CDN access.")),12000));
+    const [{Chess},{OPENINGS},{VARIATIONS},{BOARD_PUZZLES}]=await Promise.race([dependencies,timeout]);
+    let pass=0,fail=0;for(const o of OPENINGS)(validateLine(Chess,o.name,o.moves,"Opening")?pass++:fail++);for(const v of VARIATIONS)(validateLine(Chess,v.name,v.moves,"Variation")?pass++:fail++);for(const p of BOARD_PUZZLES)(validatePuzzle(Chess,p)?pass++:fail++);(validatePgnRoundTrip(Chess)?pass++:fail++);
+    $("#summary").textContent=`${pass} passed · ${fail} failed · ${pass+fail} total`;
+    $("#summary").className=`pill ${fail?"fail":"pass"}`;
+  }catch(error){
+    row("Harness","Dependency loading",false,error.message||String(error));
+    $("#summary").textContent="Smoke test could not start — see the failure row below.";$("#summary").className="pill fail";
+  }
+}
+$("#rerun").addEventListener("click",run);run();
+</script></body></html>

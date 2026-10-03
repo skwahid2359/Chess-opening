@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#111318">
+  <meta name="description" content="Learn chess openings with guided lessons, legal move practice, repertoire tracking, and position exploration.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.svg" type="image/svg+xml">
+  <title>Chess Opening Academy — V3.46 Clean Release Package</title>
+  <link rel="stylesheet" href="./src/styles.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "chess.js": "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm"
+    }
+  }
+  </script>
+</head>
+<body>
+<div id="dependencyBanner" class="dependency-banner" hidden role="alert" aria-live="assertive"><b>App startup problem</b><span>The chess module has not initialized. Check your internet connection and CDN access, then reload the app.</span><button id="reloadAfterDependencyError" type="button">Reload</button></div>
+<div id="app">
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">♞</span><div><b>Opening Academy</b><small>V3.46 CLEAN RELEASE PACKAGE</small></div></div>
+    <div class="top-actions">
+      <button id="libraryToggle" class="mobile-toggle" aria-expanded="false">Library</button>
+      <button id="toolsToggle" class="mobile-toggle" aria-expanded="false">Tools</button>
+      <button id="themeBtn" class="icon-btn" title="Toggle theme">◐</button>
+      <button id="resetBtn" class="ghost-btn">Reset</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar left">
+      <div class="panel-head"><div><small>LIBRARY</small><h2>Openings</h2></div><span id="openingCount">0</span></div>
+      <input id="searchInput" class="search" placeholder="Search opening, ECO, idea…">
+      <div class="filter-row">
+        <button class="filter active" data-filter="all">All</button>
+        <button class="filter" data-filter="e4">1.e4</button>
+        <button class="filter" data-filter="d4">1.d4</button>
+        <button class="filter" data-filter="other">Other</button>
+      </div>
+      <div id="openingList" class="opening-list"></div>
+    </aside>
+
+    <section class="workspace">
+      <div class="workspace-head">
+        <div>
+          <div class="eyebrow" id="openingECO">ECO</div>
+          <h1 id="openingTitle">Select an opening</h1>
+          <p id="openingDesc">Choose an opening family from the library.</p>
+        </div>
+        <div class="mode-tabs">
+          <button class="mode active" data-mode="learn">Learn</button>
+          <button class="mode" data-mode="train">Train</button>
+          <button class="mode" data-mode="repertoire">Repertoire</button>
+        </div>
+      </div>
+
+      <div class="board-area">
+        <div class="board-wrap">
+          <div id="board" class="board" aria-label="Chess board"></div>
+          <div class="board-tools">
+            <button id="flipBtn">Flip</button>
+            <button id="backBtn">←</button>
+            <button id="forwardBtn">→</button>
+            <button id="startBtn">⟲</button>
+            <button id="fenBtn">FEN</button>
+          </div>
+        </div>
+
+        <aside class="analysis-card">
+          <div class="card-tabs"><button class="card-tab active">Moves</button><button class="card-tab">Why</button></div>
+          <div id="moveList" class="move-list"></div>
+          <div id="whyPanel" class="why-panel"></div>
+          <section class="engine-panel" aria-labelledby="engineHeading">
+            <div class="engine-panel-head"><b id="engineHeading">Stockfish Analysis</b><span id="engineBadge" class="pill">Not loaded</span></div>
+            <p class="muted">Analyze the current board position with a local Web Worker wrapper. The engine files are fetched from the configured CDN when analysis starts.</p>
+            <div class="engine-controls"><label for="engineDepth">Depth</label><select id="engineDepth"><option value="10">10 · quick</option><option value="14" selected>14 · standard</option><option value="18">18 · deeper</option></select><button id="checkEngine" class="ghost-btn">Check engine</button><button id="analyzePosition" class="primary-btn">Analyze</button><button id="stopAnalysis" class="ghost-btn" disabled>Stop</button></div>
+            <div id="engineStatus" class="engine-status" role="status" aria-live="polite">Engine has not started.</div>
+            <div id="engineEvaluation" class="engine-evaluation">Evaluation: —</div>
+            <div id="engineBestMove" class="engine-best-move">Best move: —</div>
+            <div id="enginePv" class="engine-pv">Principal variation will appear here.</div><button id="saveEngineAnalysis" class="ghost-btn" disabled>Save analysis to study notes</button><details class="engine-debug"><summary>Engine diagnostics log</summary><pre id="engineLog">No engine messages yet.</pre><button id="clearEngineLog" class="ghost-btn">Clear log</button></details>
+          </section>
+        </aside>
+      </div>
+
+      <div class="lesson-card">
+        <div class="lesson-top">
+          <span class="pill" id="lessonTag">OPENING</span>
+          <span id="lessonProgress">0 / 0</span>
+        </div>
+        <h2 id="lessonTitle">Opening lesson</h2>
+        <p id="lessonText">Select an opening to load its first lesson.</p>
+        <div class="lesson-actions">
+          <button id="prevLesson" class="ghost-btn">Previous</button>
+          <button id="nextLesson" class="primary-btn">Next</button>
+          <button id="trainBtn" class="accent-btn">Guess the Move</button>
+        </div>
+      </div>
+
+      <section class="variation-lab panel-card">
+        <div class="section-heading"><div><div class="eyebrow">CURRICULUM</div><h2>Variation Lab</h2><p>Study a complete line, understand both sides' plans, then test recall.</p></div><span id="variationCount" class="pill">0 lines</span></div>
+        <div id="variationList" class="variation-list"></div>
+        <div id="variationDetails" class="variation-details"><p class="muted">Choose a variation to see plans and common mistakes.</p></div>
+        <div class="variation-actions"><button id="loadVariation" class="primary-btn">Load full line</button><button id="practiceVariation" class="accent-btn">Practice one move</button><button id="rehearseVariation" class="accent-btn">Rehearse full line</button><button id="saveVariationLine" class="ghost-btn">Save line</button><button id="exportVariationLine" class="ghost-btn">Export line PGN</button></div>
+      </section>
+
+      <section class="curriculum-grid">
+        <article class="curriculum-card"><span class="curriculum-icon">♟</span><h3>Opening principles</h3><p>Center, development, king safety, pawn breaks, and when to exchange.</p></article>
+        <article class="curriculum-card"><span class="curriculum-icon">⚔</span><h3>Tactical patterns</h3><p>Forks, pins, discovered attacks, deflections, and mating threats within opening positions.</p></article>
+        <article class="curriculum-card"><span class="curriculum-icon">♔</span><h3>Endgame transitions</h3><p>Recognize pawn structures, active kings, rook activity, and plans after queen exchanges.</p></article>
+      </section>
+
+      <section class="panel-card opening-analytics" aria-labelledby="analyticsHeading">
+        <div class="section-heading"><div><div class="eyebrow">YOUR PROGRESS</div><h2 id="analyticsHeading">Opening Mastery Analytics</h2><p>Review your practice history by opening family. Completion reflects practice thresholds, not engine-certified mastery.</p></div><span id="analyticsSummaryBadge" class="pill">0 practiced</span></div>
+        <div class="analytics-filters"><button class="analytics-filter active" data-analytics-filter="all">All</button><button class="analytics-filter" data-analytics-filter="e4">e4 lines</button><button class="analytics-filter" data-analytics-filter="d4">d4 lines</button><button class="analytics-filter" data-analytics-filter="other">Flank/other</button></div>
+        <div id="analyticsSummary" class="analytics-summary"></div>
+        <div id="analyticsTable" class="analytics-table"></div>
+      </section>
+
+      <section class="panel-card curriculum-coverage" aria-labelledby="coverageHeading">
+        <div class="section-heading"><div><div class="eyebrow">CURRICULUM AUDIT</div><h2 id="coverageHeading">Opening Coverage Map</h2><p>See how many stored lines and plies are available for each opening. Counts describe this library, not exhaustive theory.</p></div><span id="coverageSummaryBadge" class="pill">30 openings</span></div>
+        <div class="coverage-filters"><button class="coverage-filter active" data-coverage-filter="all">All</button><button class="coverage-filter" data-coverage-filter="e4">e4 lines</button><button class="coverage-filter" data-coverage-filter="d4">d4 lines</button><button class="coverage-filter" data-coverage-filter="other">Flank/other</button></div>
+        <div id="coverageSummary" class="coverage-summary"></div>
+        <div id="coverageTable" class="coverage-table"></div>
+      </section>
+
+      <section class="panel-card data-health" aria-labelledby="dataHealthHeading">
+        <div class="section-heading"><div><div class="eyebrow">CONTENT QA</div><h2 id="dataHealthHeading">Opening Data Health</h2><p>Checks whether stored move sequences can be replayed legally. This is not engine evaluation or a guarantee that a line is theoretically best.</p></div><button id="refreshDataHealth" class="ghost-btn">Refresh report</button></div>
+        <div id="dataHealthSummary" class="data-health-summary"></div>
+        <details class="data-health-details"><summary>View line validation report</summary><div id="dataHealthReport" class="data-health-report"></div></details>
+      </section>
+
+      <section class="panel-card learning-roadmap" aria-labelledby="roadmapHeading">
+        <div class="section-heading"><div><div class="eyebrow">YOUR STUDY PLAN</div><h2 id="roadmapHeading">Learning Roadmap</h2><p>Work through opening families in stages, track completed lines, and return to tactics and endgames when needed.</p></div><span id="roadmapOverall" class="pill">0% complete</span></div>
+        <div id="roadmapSummary" class="roadmap-summary"></div>
+        <div id="roadmapCards" class="roadmap-cards"></div>
+      </section>
+
+      <section class="panel-card study-patterns">
+        <div class="section-heading"><div><div class="eyebrow">TACTICS & ENDGAMES</div><h2>Pattern Trainer</h2><p>Learn the recognition cues, then answer a short recall question. These are concept lessons, not board-specific puzzles.</p></div></div>
+        <div class="pattern-filters"><button class="pattern-filter active" data-pattern-filter="all">All</button><button class="pattern-filter" data-pattern-filter="mate">Mating patterns</button><button class="pattern-filter" data-pattern-filter="attack">Tactical ideas</button><button class="pattern-filter" data-pattern-filter="endgame">Endgames</button></div>
+        <div id="patternList" class="pattern-list"></div>
+        <div id="patternCard" class="pattern-card"><p class="muted">Choose a concept to study.</p></div>
+        <div class="pattern-actions"><button id="revealPattern" class="primary-btn">Reveal answer</button><button id="nextPattern" class="ghost-btn">Next concept</button></div>
+      </section>
+
+      <section class="panel-card puzzle-lab" aria-labelledby="puzzleHeading">
+        <div class="section-heading"><div><div class="eyebrow">TACTICS & ENDGAMES</div><h2 id="puzzleHeading">Board Puzzle Lab</h2><p>Solve a real position on the board. Moves are checked against the puzzle goal; solutions are validated when loaded.</p></div><span id="puzzleCount" class="pill">0 puzzles</span></div>
+        <div class="puzzle-filters"><button id="reviewPuzzlesDue" class="puzzle-review-btn">Review due <span id="puzzleDueCount">0</span></button><button class="puzzle-filter active" data-puzzle-filter="all">All</button><button class="puzzle-filter" data-puzzle-filter="mate">Checkmate</button><button class="puzzle-filter" data-puzzle-filter="tactics">Tactics</button><button class="puzzle-filter" data-puzzle-filter="endgame">Endgames</button></div>
+        <div class="puzzle-layout">
+          <div class="puzzle-board-column"><div id="puzzleBoard" class="puzzle-board" aria-label="Interactive puzzle chessboard"></div><div class="puzzle-board-tools"><button id="resetPuzzle">Reset position</button><button id="showPuzzleSolution" class="ghost-btn">Show solution</button></div></div>
+          <div class="puzzle-info"><div class="puzzle-meta"><span id="puzzleDifficulty" class="pill">FOUNDATION</span><span id="puzzleType" class="muted">MATE</span></div><h3 id="puzzleTitle">Loading puzzle…</h3><p id="puzzlePrompt">Find the correct move.</p><div id="puzzleFeedback" class="puzzle-feedback" role="status" aria-live="polite">Select a piece, then its destination square.</div><div class="puzzle-controls"><button id="prevPuzzle" class="ghost-btn">Previous</button><button id="nextPuzzle" class="primary-btn">Next puzzle</button></div><div id="puzzleStats" class="muted">Solved 0 of 0</div></div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="sidebar right">
+      <div class="stat-grid">
+        <div class="stat"><small>POSITIONS LEARNED</small><b id="masteredStat">0</b></div>
+        <div class="stat"><small>ACCURACY</small><b id="accuracyStat">0%</b></div>
+        <div class="stat"><small>STREAK</small><b id="streakStat">0</b></div>
+        <div class="stat"><small>REPERTOIRE</small><b id="repertoireStat">0</b></div>
+        <div class="stat"><small>REVIEWS DUE</small><b id="reviewDueStat">0</b></div>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Position</div>
+        <div class="fen-row"><input id="fenInput" placeholder="Paste FEN"><button id="loadFen">Load</button></div>
+        <div id="positionStatus" class="muted" role="status" aria-live="polite">Starting position</div>
+      </div>
+
+      <div class="side-card pgn-tools">
+        <div class="side-title">PGN Study Import / Export</div>
+        <textarea id="pgnInput" rows="5" placeholder="Paste a PGN game here, or export the current move history."></textarea>
+        <div class="pgn-actions"><button id="importPgn">Import PGN</button><button id="exportPgn">Export current game</button></div><button id="saveCustomPgnLine" class="save-custom-line-btn">Save current game as study line</button><button id="exportFullRepertoire" class="save-custom-line-btn">Export full personal repertoire PGN</button>
+        <small class="muted">Import replaces the current board and move history.</small>
+      </div>
+
+      <div class="side-card">
+        <div class="side-title">Master Explorer</div>
+        <div id="explorerStatus" class="muted">Select an opening position.</div>
+        <div id="explorerMoves" class="explorer-moves"></div>
+      </div>
+
+      <div class="side-card backup-tools">
+        <div class="side-title">Progress Backup / Restore</div>
+        <p class="muted">Export your local repertoire, line progress, review schedule, puzzle progress, and personal study notes. Keep the backup private.</p>
+        <textarea id="backupInput" rows="4" placeholder="Export a backup here, or paste a previous backup JSON…"></textarea>
+        <div class="backup-actions"><button id="exportBackup">Export backup</button><button id="importBackup">Restore backup</button></div>
+      </div>
+      <div class="side-card">
+        <div class="side-title">Training queue</div>
+        <div id="queue" class="queue"></div>
+        <div class="side-title saved-lines-title">Saved variation lines</div>
+        <div id="savedLineQueue" class="queue"></div>
+        <div class="side-title custom-lines-title">Custom PGN lines</div>
+        <div id="customLineQueue" class="queue"></div>
+      </div>
+    </aside>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <dialog id="trainDialog" class="dialog">
+    <div class="dialog-head"><b>Guess the Move</b><button id="closeTrain">×</button></div>
+    <div id="trainBoard" class="mini-board"></div>
+    <p id="trainPrompt">Find the move.</p>
+    <p id="trainFeedback" class="train-feedback">Choose a move to see the explanation.</p>
+    <div id="trainChoices" class="choices"></div>
+  </dialog>
+  <dialog id="lineRehearsalDialog" class="dialog line-rehearsal-dialog">
+    <div class="dialog-head"><b>Full-Line Rehearsal</b><button id="closeLineRehearsal" aria-label="Close">×</button></div>
+    <div class="rehearsal-settings"><label for="rehearsalSide">Play as</label><select id="rehearsalSide"><option value="w">White</option><option value="b">Black</option></select><span id="rehearsalProgress" class="pill">0 / 0</span></div>
+    <div id="lineRehearsalBoard" class="line-rehearsal-board" aria-label="Current rehearsal position"></div>
+    <p id="rehearsalPrompt" class="rehearsal-prompt">Choose a side to rehearse the selected line.</p>
+    <div id="rehearsalFeedback" class="train-feedback" role="status" aria-live="polite">Your move will be prompted; the opponent's moves follow the study line automatically.</div>
+    <div id="rehearsalChoices" class="choices"></div>
+    <div class="rehearsal-footer"><button id="restartRehearsal" class="ghost-btn">Restart line</button><button id="finishRehearsal" class="primary-btn">Close rehearsal</button></div>
+  </dialog>
+  <dialog id="promotionDialog" class="dialog promotion-dialog">
+    <div class="dialog-head"><b>Choose promotion piece</b><button id="cancelPromotion" aria-label="Cancel promotion">×</button></div>
+    <p class="muted">Choose the piece for your pawn. Queen is usually the strongest choice, but underpromotion can be useful in some positions.</p>
+    <div class="promotion-choices"><button data-promotion="q"><span>♕</span><b>Queen</b></button><button data-promotion="r"><span>♖</span><b>Rook</b></button><button data-promotion="b"><span>♗</span><b>Bishop</b></button><button data-promotion="n"><span>♘</span><b>Knight</b></button></div>
+  </dialog>
+</div>
+<script>
+  window.addEventListener("error", function(event) {
+    if (event && (event.filename || "").includes("app.js")) {
+      var banner = document.getElementById("dependencyBanner"); if (banner) banner.hidden = false;
+    }
+  });
+  window.addEventListener("unhandledrejection", function() {
+    var banner = document.getElementById("dependencyBanner"); if (banner) banner.hidden = false;
+  });
+  setTimeout(function() {
+    if (document.documentElement.dataset.appReady !== "true") {
+      var banner = document.getElementById("dependencyBanner"); if (banner) banner.hidden = false;
+    }
+  }, 8000);
+  document.getElementById("reloadAfterDependencyError").addEventListener("click", function(){ location.reload(); });
+</script>
+<script type="module" src="./src/app.js"></script>
+<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));}</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-label="white queen">
+  <g fill="#F7F5EA" stroke="#344638" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><circle cx="24" cy="22" r="6"/><circle cx="50" cy="14" r="6"/><circle cx="76" cy="22" r="6"/><path d="M20 31 L34 52 L50 35 L66 52 L80 31 L72 72 H28 Z"/><path d="M24 76 H76 L84 88 H16 Z"/><path class="detail" d="M36 57 H64"/></g>
+  <style>.detail{fill:none;stroke:#758573;stroke-width:2.2;stroke-linecap:round}.eye{fill:#344638;stroke:none}</style>
+</svg>

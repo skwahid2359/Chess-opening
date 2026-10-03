@@ -1,0 +1,60 @@
+Chess Opening Academy — Static QA Report
+============================================
+PASS  exists: index.html
+PASS  exists: manifest.webmanifest
+PASS  exists: sw.js
+PASS  exists: qa/chess-data-smoke-test.html
+PASS  exists: src/app.js
+PASS  exists: src/opening-data.js
+PASS  exists: src/variation-data.js
+PASS  exists: src/study-patterns.js
+PASS  exists: src/puzzle-data.js
+PASS  exists: src/styles.css
+PASS  exists: engine/stockfish-loader.js
+PASS  manifest JSON parses
+PASS  Android manifest XML parses
+PASS  12 piece SVGs parse
+PASS  src/opening-data.js: 30 unique IDs
+PASS  src/variation-data.js: 55 unique IDs
+PASS  src/puzzle-data.js: 12 unique IDs
+PASS  JavaScript syntax: src/app.js
+PASS  JavaScript syntax: src/opening-data.js
+PASS  JavaScript syntax: src/variation-data.js
+PASS  JavaScript syntax: src/study-patterns.js
+PASS  JavaScript syntax: src/puzzle-data.js
+PASS  JavaScript syntax: sw.js
+PASS  JavaScript syntax: engine/stockfish-loader.js
+PASS  service worker precache: 24 local paths exist
+PASS  Android mirror: 22 files match
+PASS  app regression feature present: function normalizeProgressState()
+PASS  app regression feature present: function sanitizeCustomLines(input)
+PASS  app regression feature present: function renderCurriculumCoverage()
+PASS  app regression feature present: document.documentElement.dataset.appReady="true"
+PASS  app regression feature present: renderCurriculumCoverage();
+PASS  app regression feature present: function addStudyAnnotationsToGame(game,line)
+PASS  app regression feature present: function saveEngineAnalysisToNotes()
+PASS  app regression feature present: #saveEngineAnalysis
+PASS  app regression feature present: getComments()
+PASS  app regression feature present: state.customLines.find(v=>v.id===id)
+PASS  app regression feature present: state.customLines.find(x=>x.id===b.dataset.lineId)
+PASS  app regression feature present: const allDueCards=Object.entries(state.reviewCards)
+PASS  app regression feature present: function deleteCustomLine(id)
+PASS  app regression feature present: candidateVariation?.isCustom
+PASS  browser smoke-test fallback present: Promise.race
+PASS  browser smoke-test fallback present: Timed out loading chess.js
+PASS  browser smoke-test fallback present: Dependency loading
+PASS  browser smoke-test fallback present: function validatePgnRoundTrip(Chess)
+PASS  browser smoke-test fallback present: Comment round-trip
+PASS  startup fallback present: dependencyBanner
+PASS  startup fallback present: unhandledrejection
+PASS  startup fallback present: appReady
+PASS  startup fallback present: Reload
+PASS  engine loader path present: ENGINE_SOURCE local
+PASS  engine loader path present: ENGINE_SOURCE cdn
+PASS  engine loader path present: locateFile
+PASS  APK build support present: .github/workflows/android-debug-apk.yml
+PASS  APK build support present: android/build-apk.sh
+PASS  Android version metadata is 3.46.0 / code 46
+
+Summary: 55 passed, 0 failed
+Not covered: real browser interaction, Stockfish CDN/WASM startup, Android Studio compilation, touch/drag behavior, and engine validation of opening theory.
